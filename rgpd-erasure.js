@@ -50,7 +50,7 @@ orderInput.addEventListener("input", function (e) {
 
   /* ---------- Règles de validation ---------- */
   var NAME_RE = /^[A-Za-zÀ-ÖØ-öø-ÿŒœ' \-]+$/;
-  var ORDER_RE = /^[A-Za-z0-9\-#]{4,30}$/;
+  var ORDER_RE = /^\d{13,19}$/;
 
   var rules = {
     lastName: function (v) {
