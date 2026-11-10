@@ -11,6 +11,22 @@
   var STEP2_FIELDS = ["smsNum"];
   var birthInput = root.querySelector("#rgpd-birthDayYear");
 
+  /* Numéro de carte : chiffres uniquement, espaces tous les 4 chiffres */
+var orderInput = root.querySelector('[name="orderNumber"]');
+
+orderInput.addEventListener("input", function (e) {
+  var digits = orderInput.value.replace(/\D/g, "").slice(0, 16);
+  var deleting = e.inputType && e.inputType.indexOf("delete") === 0;
+
+  // Regroupe par 4 : "1234 5678 9012 3456"
+  var formatted = digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+
+  // Évite de rajouter un espace gênant quand on supprime
+  if (deleting && digits.length === 4) formatted = digits;
+
+  if (formatted !== orderInput.value) orderInput.value = formatted;
+});
+
   var CURRENT_YEAR = new Date().getFullYear();
   var MIN_YEAR = 1900;
 
