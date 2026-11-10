@@ -67,8 +67,11 @@ orderInput.addEventListener("input", function (e) {
     },
   orderNumber: function (v) {
   if (!v || !v.trim()) return "Ce champ est obligatoire.";
-  if (!ORDER_RE.test(v.replace(/\s/g, ""))) return "Ce numéro de carte ne semble pas valide.";
+  var digits = v.replace(/\s/g, "");
+  if (!/^\d+$/.test(digits)) return "Utilisez uniquement des chiffres.";
+  if (!ORDER_RE.test(digits)) return "Ce numéro de carte ne semble pas valide.";
   return "";
+},
 },
     birthDayYear: function (v) {
       if (!v) return "Veuillez indiquer votre jour et votre année de naissance.";
